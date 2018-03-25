@@ -29,7 +29,29 @@ public class RunLengthEncoding implements Iterable {
    *  Define any variables associated with a RunLengthEncoding object here.
    *  These variables MUST be private.
    */
+public class DList{
+  DList head=null;
+  short[] inColors=new short[3];
+  inColors[0]=red;
+  inColors[1]=green;
+  inColors[2]=blue;
 
+  DList next;
+  // constructor
+    public DList(short[] color, DList next){
+
+      this.inColors=color;
+      
+
+
+    }
+  public void addFirst(short[] color){
+    this.head=new dList(color, head);
+  }
+
+
+
+}
 
 
 
@@ -48,6 +70,10 @@ public class RunLengthEncoding implements Iterable {
 
   public RunLengthEncoding(int width, int height) {
     // Your solution here.
+
+    for (int i=0; i<width*height; i++){
+
+    }
   }
 
   /**

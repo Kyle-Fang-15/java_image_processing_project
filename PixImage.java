@@ -16,6 +16,11 @@
  */
 
 public class PixImage {
+  private int width;
+  private int height;
+  private short[][][] pixs; //first width second height third 3 (0-red,1-green,2-blue)
+
+
 
   /**
    *  Define any variables associated with a PixImage object here.  These
@@ -33,6 +38,17 @@ public class PixImage {
    * @param height the height of the image.
    */
   public PixImage(int width, int height) {
+    this.width=width;
+    this.height=height;
+  pixs = new short[this.width][this.height][3];
+  for (int i=0; i<this.width; i++){
+    for (int j=0; j<this.height; j++){
+      for (int k=0; k<3; k++){
+        pixs[i][j][k]=0;
+      }
+    }
+    }
+
     // Your solution here.
   }
 
@@ -43,7 +59,7 @@ public class PixImage {
    */
   public int getWidth() {
     // Replace the following line with your solution.
-    return 1;
+    return this.width;
   }
 
   /**
@@ -53,7 +69,7 @@ public class PixImage {
    */
   public int getHeight() {
     // Replace the following line with your solution.
-    return 1;
+    return this.height;
   }
 
   /**
@@ -65,7 +81,7 @@ public class PixImage {
    */
   public short getRed(int x, int y) {
     // Replace the following line with your solution.
-    return 0;
+    return this.pixs[x][y][0];
   }
 
   /**
@@ -77,7 +93,7 @@ public class PixImage {
    */
   public short getGreen(int x, int y) {
     // Replace the following line with your solution.
-    return 0;
+    return this.pixs[x][y][1];
   }
 
   /**
@@ -89,7 +105,7 @@ public class PixImage {
    */
   public short getBlue(int x, int y) {
     // Replace the following line with your solution.
-    return 0;
+    return this.pixs[x][y][2];
   }
 
   /**
@@ -106,7 +122,16 @@ public class PixImage {
    * @param blue the new blue intensity for the pixel at coordinate (x, y).
    */
   public void setPixel(int x, int y, short red, short green, short blue) {
+
     // Your solution here.
+    if (x>=this.width || y>=this.height){
+      System.out.println("coordinate out of range");
+      return;
+    }
+    if (red<= 255 && red>0) this.pixs[x][y][0]=red;
+    if (green<=255 && green>0) this.pixs[x][y][1]=green;
+    if (blue<=255 && blue>0) this.pixs[x][y][2]=blue;
+
   }
 
   /**
@@ -120,7 +145,15 @@ public class PixImage {
    */
   public String toString() {
     // Replace the following line with your solution.
-    return "";
+    String newStr="";
+    for (int j=0; j<this.getHeight();j++){
+      for (int i=0; i<this.getWidth();i++){
+        newStr+=this.getRed(i,j)+" "+ this.getGreen(i,j)+ " "+ this.getBlue(i,j)+" ";
+      }
+      newStr+="\n";
+    }
+
+    return newStr;
   }
 
   /**
@@ -153,8 +186,60 @@ public class PixImage {
    * @return a blurred version of "this" PixImage.
    */
   public PixImage boxBlur(int numIterations) {
+    //
+    if (numIterations<=0) return this;
+    //copy the original this image
+    PixImage copyImage= new PixImage(this.width, this.height);
+    for (int i=0; i<this.width; i++){
+      for (int j=0; j<this.height; j++){
+        copyImage.setPixel(i,j,this.getRed(i,j),this.getGreen(i,j),this.getBlue(i,j));
+      }
+    }
+
+    while(numIterations>0){
+      numIterations--;
+      //temperary img
+      PixImage tempImage=new PixImage(this.width, this.height);
+      for (int i=0; i<this.width; i++){
+        for (int j=0; j<this.height; j++){
+          tempImage.setPixel(i,j,copyImage.getRed(i,j),copyImage.getGreen(i,j),copyImage.getBlue(i,j));
+        }
+      }
+
+      for (int i=0; i<this.width; i++){
+        for (int j=0; j<this.height; j++){
+          short sumRed=0; //calculate sum of colors
+          short sumGreen=0;
+          short sumBlue=0;
+          short count=0; //number of valid neighbouring pixs
+
+            //calculate sum of colors
+            for (int ii=i-1;ii<=i+1;ii++){
+              for (int jj=j-1; jj<=j+1; jj++){
+                if(ii>=0 && ii<=this.width-1 && jj>=0 && jj<=this.height-1) {
+                  sumRed += tempImage.getRed(ii, jj);
+                  sumGreen += tempImage.getGreen(ii, jj);
+                  sumBlue += tempImage.getBlue(ii, jj);
+                  count+=1;
+
+                }
+
+              }
+            }
+
+            copyImage.setPixel(i, j,(short) (sumRed/count), (short) (sumGreen/count),(short) (sumBlue/count));
+
+
+
+
+
+        }
+      }
+
+
+    }
     // Replace the following line with your solution.
-    return this;
+    return copyImage;
   }
 
   /**
@@ -197,9 +282,91 @@ public class PixImage {
    * @return a grayscale PixImage representing the edges of the input image.
    * Whiter pixels represent stronger edges.
    */
+
+
+  //helper-set the boundary
+  public PixImage reflection(){
+
+    PixImage newImage= new PixImage(this.getWidth()+2, this.getHeight()+2);
+    for (int i=0; i<newImage.getWidth()-2; i++){
+      for (int j=0; j<newImage.getHeight()-2; j++){
+        newImage.setPixel(i+1,j+1,this.getRed(i,j),this.getGreen(i,j),this.getBlue(i,j));
+      }
+    }
+
+    //upper
+    for (int i=1; i<newImage.getWidth()-1; i++){
+      newImage.setPixel(i,0,newImage.getRed(i,1),newImage.getGreen(i,1),newImage.getBlue(i,1));
+    }
+    //bottom
+    for (int i=1; i<newImage.getWidth()-1; i++){
+      newImage.setPixel(i,newImage.getHeight()-1,newImage.getRed(i,newImage.getHeight()-2),newImage.getGreen(i,newImage.getHeight()-2),newImage.getBlue(i,newImage.getHeight()-2));
+    }
+
+    //left
+    for (int i=1; i<newImage.getHeight()-1; i++){
+      newImage.setPixel(0,i,newImage.getRed(1,i),newImage.getGreen(1,i),newImage.getBlue(1,i));
+    }
+    //right
+    for (int i=1; i<newImage.getHeight()-1; i++){
+      newImage.setPixel(newImage.getWidth()-1,i,newImage.getRed(newImage.getWidth()-2,i),newImage.getGreen(newImage.getWidth()-2,i),newImage.getBlue(newImage.getWidth()-2,i));
+    }
+    //four corners
+    newImage.setPixel(0,0, newImage.getRed(1,1), newImage.getGreen(1,1), newImage.getBlue(1,1));
+    newImage.setPixel(0,newImage.getHeight()-1, newImage.getRed(1,newImage.getHeight()-2), newImage.getGreen(1,newImage.getHeight()-2), newImage.getBlue(1,newImage.getHeight()-2));
+    newImage.setPixel(newImage.getWidth()-1,0, newImage.getRed(newImage.getWidth()-2,1), newImage.getGreen(newImage.getWidth()-2,1), newImage.getBlue(newImage.getWidth()-2,1));
+    newImage.setPixel(newImage.getWidth()-1,newImage.getHeight()-1, newImage.getRed(newImage.getWidth()-2,newImage.getHeight()-2), newImage.getGreen(newImage.getWidth()-2,newImage.getHeight()-2), newImage.getBlue(newImage.getWidth()-2,newImage.getHeight()-2));
+
+
+
+
+
+    return newImage;
+  }
+
+
+  public long energy(int i, int j){
+
+    PixImage withBorder= this.reflection();
+
+// i is number of column, j is row number--------
+    // boundary condition
+      i++;
+      j++;
+     long gxRed=withBorder.getRed(i-1,j-1)+2*withBorder.getRed(i-1,j)+withBorder.getRed(i-1,j+1)
+             -withBorder.getRed(i+1,j-1)-2*withBorder.getRed(i+1, j)-withBorder.getRed(i+1,j+1);
+    long gyRed=withBorder.getRed(i-1,j-1)+2*withBorder.getRed(i,j-1)+withBorder.getRed(i+1,j-1)
+            -withBorder.getRed(i-1,j+1)-2*withBorder.getRed(i, j+1)-withBorder.getRed(i+1,j+1);
+
+    long gxGreen=withBorder.getGreen(i-1,j-1)+2*withBorder.getGreen(i-1,j)+withBorder.getGreen(i-1,j+1)
+            -withBorder.getGreen(i+1,j-1)-2*withBorder.getGreen(i+1, j)-withBorder.getGreen(i+1,j+1);
+    long gyGreen=withBorder.getGreen(i-1,j-1)+2*withBorder.getGreen(i,j-1)+withBorder.getGreen(i+1,j-1)
+            -withBorder.getGreen(i-1,j+1)-2*withBorder.getGreen(i, j+1)-withBorder.getGreen(i+1,j+1);
+
+    long gxBlue=withBorder.getBlue(i-1,j-1)+2*withBorder.getBlue(i-1,j)+withBorder.getBlue(i-1,j+1)
+            -withBorder.getBlue(i+1,j-1)-2*withBorder.getBlue(i+1, j)-withBorder.getBlue(i+1,j+1);
+    long gyBlue=withBorder.getBlue(i-1,j-1)+2*withBorder.getBlue(i,j-1)+withBorder.getBlue(i+1,j-1)
+            -withBorder.getBlue(i-1,j+1)-2*withBorder.getBlue(i, j+1)-withBorder.getBlue(i+1,j+1);
+
+
+    return gxRed*gxRed+gyRed*gyRed+gxBlue*gxBlue+gyBlue*gyBlue+gxGreen*gxGreen+gyGreen*gyGreen;
+
+  }
+
   public PixImage sobelEdges() {
+    PixImage sobelImage = new PixImage(this.getWidth(), this.getHeight());
+
+    for(int i=0; i<sobelImage.getWidth(); i++){
+      for (int j=0; j<sobelImage.getHeight();j++){
+        short greyColor=mag2gray(energy(i,j));
+        sobelImage.setPixel(i, j, greyColor, greyColor, greyColor);
+
+      }
+    }
+
+
     // Replace the following line with your solution.
-    return this;
+    return sobelImage;
     // Don't forget to use the method mag2gray() above to convert energies to
     // pixel intensities.
   }
@@ -289,8 +456,11 @@ public class PixImage {
     PixImage image1 = array2PixImage(new int[][] { { 0, 10, 240 },
                                                    { 30, 120, 250 },
                                                    { 80, 250, 255 } });
+    System.out.println(image1.sobelEdges().toString());
+
     System.out.println("Testing getWidth/getHeight on a 3x3 image.  " +
                        "Input image:");
+
     System.out.print(image1);
     doTest(image1.getWidth() == 3 && image1.getHeight() == 3,
            "Incorrect image width and height.");
